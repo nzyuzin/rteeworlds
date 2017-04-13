@@ -87,9 +87,9 @@ const char* CGameControllerCTF::GetScoreInfo()
 {
 	std::string result = "";
 	result += "Gametype: rCTF\n";
-	result += "Players:\n";
 	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
 	result += "Winner: " + TeamToString(WinnerTeam) + "\n";
+	result += "Players:\n";
 	for(int c = 0; c < MAX_CLIENTS; c++)
 	{
 		CPlayer *pPlayer = GameServer()->m_apPlayers[c];
