@@ -88,6 +88,7 @@ const char* CGameControllerCTF::GetScoreInfo()
 	std::string result = "";
 	result += "Gametype: rCTF\n";
 	result += "Players:\n";
+	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
 	result += "Winner: " + TeamToString(WinnerTeam) + "\n";
 	for(int c = 0; c < MAX_CLIENTS; c++)
 	{
@@ -100,7 +101,6 @@ const char* CGameControllerCTF::GetScoreInfo()
 			result = result + Server()->ClientName(pPlayer->GetCID()) + " " + Server()->ClientClan(pPlayer->GetCID()) + " " + to_string(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
 		}
 	}
-	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
 	return result.c_str();
 }
 
