@@ -1,5 +1,8 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include <string>
+#include <sstream>
+
 #include <engine/shared/config.h>
 
 #include <game/mapitems.h>
@@ -10,12 +13,14 @@
 #include <game/server/gamecontext.h>
 #include "ctf.h"
 
+#include "reportscore.h"
+
 CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
 	m_apFlags[0] = 0;
 	m_apFlags[1] = 0;
-	m_pGameType = "CTF";
+	m_pGameType = "rCTF";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_FLAGS;
 }
 
@@ -66,6 +71,39 @@ int CGameControllerCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	return HadFlag;
 }
 
+std::string to_string(int i)
+{
+	std::ostringstream ss;
+	ss << i;
+	return ss.str();
+}
+
+std::string TeamToString(int Team)
+{
+	return TEAM_RED == Team ? "RED" : "BLUE";
+}
+
+const char* CGameControllerCTF::GetScoreInfo()
+{
+	std::string result = "";
+	result += "Gametype: rCTF\n";
+	result += "Players:\n";
+	for(int c = 0; c < MAX_CLIENTS; c++)
+	{
+		CPlayer *pPlayer = GameServer()->m_apPlayers[c];
+		if(!pPlayer)
+			continue;
+
+		if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+		{
+			result = result + Server()->ClientName(pPlayer->GetCID()) + " " + Server()->ClientClan(pPlayer->GetCID()) + " " + to_string(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
+		}
+	}
+	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
+	result += "Winner: " + TeamToString(WinnerTeam) + "\n";
+	return result.c_str();
+}
+
 void CGameControllerCTF::DoWincheck()
 {
 	if(m_GameOverTick == -1 && !m_Warmup)
@@ -77,12 +115,18 @@ void CGameControllerCTF::DoWincheck()
 			if(m_SuddenDeath)
 			{
 				if(m_aTeamscore[TEAM_RED]/100 != m_aTeamscore[TEAM_BLUE]/100)
+				{
+					ReportScore(GetScoreInfo());
 					EndRound();
+				}
 			}
 			else
 			{
 				if(m_aTeamscore[TEAM_RED] != m_aTeamscore[TEAM_BLUE])
+				{
+					ReportScore(GetScoreInfo());
 					EndRound();
+				}
 				else
 					m_SuddenDeath = 1;
 			}

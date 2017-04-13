@@ -18,6 +18,9 @@ public:
 
 	virtual bool OnEntity(int Index, vec2 Pos);
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
+
+private:
+	virtual const char* GetScoreInfo();
 };
 
 #endif
