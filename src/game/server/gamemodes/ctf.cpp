@@ -83,13 +83,26 @@ std::string TeamToString(int Team)
 	return TEAM_RED == Team ? "RED" : "BLUE";
 }
 
+std::string GuardQuotes(std::string Str)
+{
+	std::string Result = "";
+	for (int i = 0; i < Str.length(); i++)
+	{
+		if (Str[i] == '"')
+			Result += "\\\"";
+		else
+			Result += Str[i];
+	}
+	return Result;
+}
+
 const char* CGameControllerCTF::GetScoreInfo()
 {
-	std::string result = "";
-	result += "Gametype: rCTF\n";
+	std::string Result = "";
+	Result += "Gametype: rCTF\n";
 	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
-	result += "Winner: " + TeamToString(WinnerTeam) + "\n";
-	result += "Players:\n";
+	Result += "Winner: " + TeamToString(WinnerTeam) + "\n";
+	Result += "Players:\n";
 	for(int c = 0; c < MAX_CLIENTS; c++)
 	{
 		CPlayer *pPlayer = GameServer()->m_apPlayers[c];
@@ -98,10 +111,12 @@ const char* CGameControllerCTF::GetScoreInfo()
 
 		if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 		{
-			result = result + Server()->ClientName(pPlayer->GetCID()) + " " + Server()->ClientClan(pPlayer->GetCID()) + " " + to_string(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
+			std::string Name = GuardQuotes(Server()->ClientName(pPlayer->GetCID()));
+			std::string Clan = GuardQuotes(Server()->ClientClan(pPlayer->GetCID()));
+			Result = Result + "\"" + Name + "\" \"" + Clan + "\" " + to_string(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
 		}
 	}
-	return result.c_str();
+	return Result.c_str();
 }
 
 void CGameControllerCTF::DoWincheck()
