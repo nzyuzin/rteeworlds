@@ -1,1 +1,1 @@
-void ReportScore(const char* score);
+void ReportGameinfo(const char* gameinfo);

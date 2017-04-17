@@ -71,11 +71,11 @@ int CGameControllerCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	return HadFlag;
 }
 
-std::string to_string(int i)
+std::string ToString(int I)
 {
-	std::ostringstream ss;
-	ss << i;
-	return ss.str();
+	std::ostringstream StringStream;
+	StringStream << I;
+	return StringStream.str();
 }
 
 std::string TeamToString(int Team)
@@ -96,10 +96,18 @@ std::string GuardQuotes(std::string Str)
 	return Result;
 }
 
-const char* CGameControllerCTF::GetScoreInfo()
+const char* CGameControllerCTF::GetGameinfo()
 {
 	std::string Result = "";
 	Result += "Gametype: rCTF\n";
+  Result += "Map: ";
+  Result += g_Config.m_SvMap;
+  Result += "\n";
+  Result += "Gametime: ";
+  int GameTime = (Server()->Tick() - m_RoundStartTick) / Server()->TickSpeed();
+  Result += ToString(GameTime);
+  Result += "\n";
+
 	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
 	Result += "Winner: " + TeamToString(WinnerTeam) + "\n";
 	Result += "Players:\n";
@@ -113,7 +121,7 @@ const char* CGameControllerCTF::GetScoreInfo()
 		{
 			std::string Name = GuardQuotes(Server()->ClientName(pPlayer->GetCID()));
 			std::string Clan = GuardQuotes(Server()->ClientClan(pPlayer->GetCID()));
-			Result = Result + "\"" + Name + "\" \"" + Clan + "\" " + to_string(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
+			Result = Result + "\"" + Name + "\" \"" + Clan + "\" " + ToString(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
 		}
 	}
 	return Result.c_str();
@@ -131,7 +139,7 @@ void CGameControllerCTF::DoWincheck()
 			{
 				if(m_aTeamscore[TEAM_RED]/100 != m_aTeamscore[TEAM_BLUE]/100)
 				{
-					ReportScore(GetScoreInfo());
+					ReportGameinfo(GetGameinfo());
 					EndRound();
 				}
 			}
@@ -139,7 +147,7 @@ void CGameControllerCTF::DoWincheck()
 			{
 				if(m_aTeamscore[TEAM_RED] != m_aTeamscore[TEAM_BLUE])
 				{
-					ReportScore(GetScoreInfo());
+					ReportGameinfo(GetGameinfo());
 					EndRound();
 				}
 				else

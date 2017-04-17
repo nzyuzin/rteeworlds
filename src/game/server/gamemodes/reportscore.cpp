@@ -4,12 +4,12 @@
 
 #include "reportscore.h"
 
-void ReportScore(const char* ScoreString)
+void ReportGameinfo(const char* GameinfoString)
 {
   pid_t pid = fork();
   if (pid == 0)
   {
-    int result = execlp("./report_scores", "./report_scores", ScoreString, NULL);
+    execlp("./send_gameinfo", "./send_gameinfo", GameinfoString, NULL);
     if (errno != 0)
     {
       perror("error");

@@ -20,7 +20,7 @@ public:
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
 
 private:
-	virtual const char* GetScoreInfo();
+	virtual const char* GetGameinfo();
 };
 
 #endif
