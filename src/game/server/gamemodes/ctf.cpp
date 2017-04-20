@@ -129,7 +129,7 @@ const char* CGameControllerCTF::GetGameinfo()
 
 void CGameControllerCTF::ProcessRatedGame()
 {
-	if (GameServer()->m_IsRatedGame)
+	if (!GameServer()->m_IsRatedGame)
 	{
 		return;
 	}
