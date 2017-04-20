@@ -1462,12 +1462,14 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 		g_Config.m_SvScorelimit = 1000;
 		g_Config.m_SvTimelimit = 60;
 		pSelf->m_IsRatedGame = true;
+		pSelf->m_pController->DoWarmup(20);
 	}
 	else
 	{
 		g_Config.m_SvScorelimit = 800;
 		g_Config.m_SvTimelimit = 40;
 		pSelf->m_IsRatedGame = true;
+		pSelf->m_pController->DoWarmup(20);
 	}
 }
 
