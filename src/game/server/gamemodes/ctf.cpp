@@ -127,6 +127,18 @@ const char* CGameControllerCTF::GetGameinfo()
 	return Result.c_str();
 }
 
+void CGameControllerCTF::ProcessRatedGame()
+{
+	if (!g_Config.m_SvRatedGame)
+	{
+		return;
+	}
+	g_Config.m_SvRatedGame = 0;
+	g_Config.m_SvTimelimit = 0;
+	g_Config.m_SvScorelimit = 0;
+	ReportGameinfo(GetGameinfo());
+}
+
 void CGameControllerCTF::DoWincheck()
 {
 	if(m_GameOverTick == -1 && !m_Warmup)
@@ -139,8 +151,7 @@ void CGameControllerCTF::DoWincheck()
 			{
 				if(m_aTeamscore[TEAM_RED]/100 != m_aTeamscore[TEAM_BLUE]/100)
 				{
-					if (g_Config.m_SvRatedGame)
-						ReportGameinfo(GetGameinfo());
+					ProcessRatedGame();
 					EndRound();
 				}
 			}
@@ -148,8 +159,7 @@ void CGameControllerCTF::DoWincheck()
 			{
 				if(m_aTeamscore[TEAM_RED] != m_aTeamscore[TEAM_BLUE])
 				{
-					if (g_Config.m_SvRatedGame)
-						ReportGameinfo(GetGameinfo());
+					ProcessRatedGame();
 					EndRound();
 				}
 				else

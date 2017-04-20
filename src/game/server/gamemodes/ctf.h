@@ -21,6 +21,7 @@ public:
 
 private:
 	virtual const char* GetGameinfo();
+	virtual void ProcessRatedGame();
 };
 
 #endif
