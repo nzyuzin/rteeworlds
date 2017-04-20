@@ -100,13 +100,13 @@ const char* CGameControllerCTF::GetGameinfo()
 {
 	std::string Result = "";
 	Result += "Gametype: rCTF\n";
-  Result += "Map: ";
-  Result += g_Config.m_SvMap;
-  Result += "\n";
-  Result += "Gametime: ";
-  int GameTime = (Server()->Tick() - m_RoundStartTick) / Server()->TickSpeed();
-  Result += ToString(GameTime);
-  Result += "\n";
+	Result += "Map: ";
+	Result += g_Config.m_SvMap;
+	Result += "\n";
+	Result += "Gametime: ";
+	int GameTime = (Server()->Tick() - m_RoundStartTick) / Server()->TickSpeed();
+	Result += ToString(GameTime);
+	Result += "\n";
 
 	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
 	Result += "Winner: " + TeamToString(WinnerTeam) + "\n";
@@ -139,7 +139,8 @@ void CGameControllerCTF::DoWincheck()
 			{
 				if(m_aTeamscore[TEAM_RED]/100 != m_aTeamscore[TEAM_BLUE]/100)
 				{
-					ReportGameinfo(GetGameinfo());
+					if (g_Config.m_SvRatedGame)
+						ReportGameinfo(GetGameinfo());
 					EndRound();
 				}
 			}
@@ -147,7 +148,8 @@ void CGameControllerCTF::DoWincheck()
 			{
 				if(m_aTeamscore[TEAM_RED] != m_aTeamscore[TEAM_BLUE])
 				{
-					ReportGameinfo(GetGameinfo());
+					if (g_Config.m_SvRatedGame)
+						ReportGameinfo(GetGameinfo());
 					EndRound();
 				}
 				else
