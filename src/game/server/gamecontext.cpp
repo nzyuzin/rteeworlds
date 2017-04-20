@@ -1430,7 +1430,45 @@ void CGameContext::ConVote(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->m_IsRatedGame = true;
+	int PlayersNumber = 0;
+	int RedTeamPlayers = 0;
+	int BlueTeamPlayers = 0;
+	for (int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if (pSelf->m_apPlayers[i] != NULL)
+		{
+			PlayersNumber++;
+			if (pSelf->m_apPlayers[i]->GetTeam() == TEAM_RED)
+				RedTeamPlayers++;
+			else if (pSelf->m_apPlayers[i]->GetTeam() == TEAM_BLUE)
+				BlueTeamPlayers++;
+		}
+	}
+
+	if (PlayersNumber != 10 && PlayersNumber != 8)
+	{
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 4 on 4 and 5 on 5 games are supported.");
+		pSelf->SendChatTarget(-1, aBuf);
+	}
+	else if (RedTeamPlayers != BlueTeamPlayers)
+	{
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
+		pSelf->SendChatTarget(-1, aBuf);
+	}
+	else if (PlayersNumber == 10)
+	{
+		g_Config.m_SvScorelimit = 1000;
+		g_Config.m_SvTimelimit = 60;
+		pSelf->m_IsRatedGame = true;
+	}
+	else
+	{
+		g_Config.m_SvScorelimit = 800;
+		g_Config.m_SvTimelimit = 40;
+		pSelf->m_IsRatedGame = true;
+	}
 }
 
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
