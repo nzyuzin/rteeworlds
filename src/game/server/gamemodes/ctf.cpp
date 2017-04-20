@@ -129,11 +129,11 @@ const char* CGameControllerCTF::GetGameinfo()
 
 void CGameControllerCTF::ProcessRatedGame()
 {
-	if (!g_Config.m_SvRatedGame)
+	if (GameServer()->m_IsRatedGame)
 	{
 		return;
 	}
-	g_Config.m_SvRatedGame = 0;
+	GameServer()->m_IsRatedGame = false;
 	g_Config.m_SvTimelimit = 0;
 	g_Config.m_SvScorelimit = 0;
 	ReportGameinfo(GetGameinfo());
