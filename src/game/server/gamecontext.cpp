@@ -1473,6 +1473,21 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 	}
 }
 
+void CGameContext::ConCbReportRank(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
+	const char *pPlayerName = pResult->GetString(1);
+	int Rating = pResult->GetInteger(2);
+	int Rank = pResult->GetInteger(3);
+	if(!pSelf->m_apPlayers[ClientID])
+		return;
+
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "%d. %s Rating: %d, requested by %s", Rank, pPlayerName, Rating, pSelf->Server()->ClientName(ClientID));
+	pSelf->SendChatTarget(-1, aBuf);
+}
+
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	pfnCallback(pResult, pCallbackUserData);
@@ -1514,6 +1529,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
 
 	Console()->Register("start_rated_game", "", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game");
+	Console()->Register("_cb_report_rank", "iii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 }
