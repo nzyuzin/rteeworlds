@@ -109,7 +109,7 @@ const char* CGameControllerCTF::GetGameinfo()
 	Result += "\n";
 
 	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
-	Result += "Winner: " + TeamToString(WinnerTeam) + "\n";
+	Result += "Result: " + TeamToString(WinnerTeam) + "\n";
 	Result += "Players:\n";
 	for(int c = 0; c < MAX_CLIENTS; c++)
 	{
