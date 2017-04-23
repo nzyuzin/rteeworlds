@@ -7,7 +7,6 @@
 #include <engine/map.h>
 #include <engine/console.h>
 #include "gamecontext.h"
-#include "reportscore.h"
 #include <game/version.h>
 #include <game/collision.h>
 #include <game/gamecore.h>
@@ -36,6 +35,7 @@ void CGameContext::Construct(int Resetting)
 	m_pVoteOptionLast = 0;
 	m_NumVoteOptions = 0;
 	m_LockTeams = 0;
+	m_ChatResponseTargetID = -1;
 
 	m_IsRatedGame = false;
 
@@ -288,35 +288,6 @@ void CGameContext::SendBroadcast(const char *pText, int ClientID)
 	CNetMsg_Sv_Broadcast Msg;
 	Msg.m_pMessage = pText;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
-}
-
-void CGameContext::ProcessCommand(int ClientID, const char *pCommand)
-{
-	const char *pArguments = str_skip_whitespaces(str_skip_to_whitespace((char*)pCommand));
-	char aCommandName[64];
-	int i;
-	for (i = 0; pCommand[i] != ' ' && pCommand[i] != '\0' && i < 63; i++)
-		aCommandName[i] = pCommand[i];
-	aCommandName[i] = '\0';
-	if (str_comp(aCommandName, "/rank") == 0)
-	{
-		char RankRequest[512];
-		const char *pName;
-		if (str_length(pArguments) == 0)
-		{
-			pName = Server()->ClientName(ClientID);
-		}
-		else
-		{
-			pName = pArguments;
-		}
-		str_format(RankRequest, sizeof(RankRequest), "Player_request\nPlayer_rank\n%d\n127.0.0.1:18383\n\"%s\"", ClientID, pName);
-		ReportGameinfo(RankRequest);
-	}
-	else
-	{
-		SendChatTarget(ClientID, "Unknown command");
-	}
 }
 
 //
@@ -625,6 +596,32 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 	}
 }
 
+void CGameContext::SendChatResponse(const char *pLine, void *pUser)
+{
+	CGameContext *pSelf = (CGameContext *)pUser;
+	int ClientID = pSelf->m_ChatResponseTargetID;
+
+	if(ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+
+	const char *pLineOrig = pLine;
+
+	static volatile int ReentryGuard = 0;
+
+	if(ReentryGuard)
+		return;
+	ReentryGuard++;
+
+	if(*pLine == '[')
+	do
+		pLine++;
+	while((pLine - 2 < pLineOrig || *(pLine - 2) != ':') && *pLine != 0); // remove the category (e.g. [Console]: No Such Command)
+
+	pSelf->SendChatTarget(ClientID, pLine);
+
+	ReentryGuard--;
+}
+
 void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 {
 	void *pRawMsg = m_NetObjHandler.SecureUnpackMsg(MsgID, pUnpacker);
@@ -683,9 +680,29 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(Length == 0 || (g_Config.m_SvSpamprotection && pPlayer->m_LastChat && pPlayer->m_LastChat+Server()->TickSpeed()*((15+Length)/16) > Server()->Tick()))
 				return;
 
-			if (pMsg->m_pMessage[0] == '/')
+			if(pMsg->m_pMessage[0]=='/')
 			{
-				ProcessCommand(ClientID, pMsg->m_pMessage);
+				char pMessage[256];
+				str_copy(pMessage, pMsg->m_pMessage, sizeof(pMessage));
+				for (int i = 1; pMessage[i] != '\0'; i++)
+				{
+					if (pMessage[i] == ';')
+					{
+						pMessage[i] = '\0'; // Cut everything after semicolon
+						break;
+					}
+				}
+				Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_USER);
+				Console()->SetPrintOutputLevel(m_ChatPrintCBIndex, 0);
+				m_ChatResponseTargetID = ClientID;
+				Server()->SetRconCID(ClientID);
+				Console()->ExecuteLineFlag(pMessage + 1, CFGFLAG_CHAT);
+				Server()->SetRconCID(IServer::RCON_CID_SERV);
+				char aBuf[256];
+				str_format(aBuf, sizeof(aBuf), "%d used %s", ClientID, pMessage);
+				Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "chat-command", aBuf);
+				m_ChatResponseTargetID = -1;
+				Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_ADMIN);
 			}
 			else
 			{
@@ -1517,6 +1534,7 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 	}
 	else if(str_comp(g_Config.m_SvGametype, "rDM") == 0)
 	{
+		char aBuf[256];
 		if (PlayersNumber != 2)
 		{
 			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 1on1 games are supported.");
@@ -1580,6 +1598,8 @@ void CGameContext::OnConsoleInit()
 	m_pServer = Kernel()->RequestInterface<IServer>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 
+	m_ChatPrintCBIndex = Console()->RegisterPrintCallback(0, SendChatResponse, this);
+
 	Console()->Register("tune", "si", CFGFLAG_SERVER, ConTuneParam, this, "Tune variable to value");
 	Console()->Register("tune_reset", "", CFGFLAG_SERVER, ConTuneReset, this, "Reset tuning");
 	Console()->Register("tune_dump", "", CFGFLAG_SERVER, ConTuneDump, this, "Dump tuning");
@@ -1605,6 +1625,9 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
+
+#define CHAT_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
+#include "chatcommands.h"
 }
 
 void CGameContext::OnInit(/*class IKernel *pKernel*/)

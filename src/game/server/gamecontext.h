@@ -45,6 +45,11 @@ class CGameContext : public IGameServer
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
 
+	int m_ChatResponseTargetID;
+	int m_ChatPrintCBIndex;
+
+	static void SendChatResponse(const char *pLine, void *pUser);
+
 	static void ConTuneParam(IConsole::IResult *pResult, void *pUserData);
 	static void ConTuneReset(IConsole::IResult *pResult, void *pUserData);
 	static void ConTuneDump(IConsole::IResult *pResult, void *pUserData);
@@ -63,9 +68,11 @@ class CGameContext : public IGameServer
 	static void ConForceVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConClearVotes(IConsole::IResult *pResult, void *pUserData);
 	static void ConVote(IConsole::IResult *pResult, void *pUserData);
+	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+
+	static void ConRank(IConsole::IResult *pResult, void *pUserData);
 	static void ConStartRatedGame(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbReportRank(IConsole::IResult *pResult, void *pUserData);
-	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 	CGameContext(int Resetting);
 	void Construct(int Resetting);
@@ -92,8 +99,6 @@ public:
 	class CCharacter *GetPlayerChar(int ClientID);
 
 	int m_LockTeams;
-
-	void ProcessCommand(int ClientID, const char *pCommand);
 
 	// rated game
 	bool m_IsRatedGame;

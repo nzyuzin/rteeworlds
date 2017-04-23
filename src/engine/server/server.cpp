@@ -436,6 +436,11 @@ void CServer::SetRconCID(int ClientID)
 	m_RconClientID = ClientID;
 }
 
+int CServer::GetRconCID()
+{
+	return m_RconClientID;
+}
+
 bool CServer::IsAuthed(int ClientID)
 {
 	return m_aClients[ClientID].m_Authed;

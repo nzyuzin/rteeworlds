@@ -179,6 +179,7 @@ public:
 	int Init();
 
 	void SetRconCID(int ClientID);
+	int GetRconCID();
 	bool IsAuthed(int ClientID);
 	int GetClientInfo(int ClientID, CClientInfo *pInfo);
 	void GetClientAddr(int ClientID, char *pAddrStr, int Size);
