@@ -7,13 +7,13 @@
 #include <engine/map.h>
 #include <engine/console.h>
 #include "gamecontext.h"
+#include "reportscore.h"
 #include <game/version.h>
 #include <game/collision.h>
 #include <game/gamecore.h>
 #include "gamemodes/dm.h"
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
-#include "gamemodes/reportscore.h"
 #include "gamemodes/mod.h"
 
 enum
@@ -1482,31 +1482,60 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 		}
 	}
 
-	if (PlayersNumber != 10 && PlayersNumber != 8)
+	if(str_comp(g_Config.m_SvGametype, "rCTF") == 0)
 	{
 		char aBuf[256];
-		str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 4 on 4 and 5 on 5 games are supported.");
-		pSelf->SendChatTarget(-1, aBuf);
+		if (PlayersNumber != 10 && PlayersNumber != 8)
+		{
+			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 4on4 and 5on5 games are supported.");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
+		else if (RedTeamPlayers != BlueTeamPlayers)
+		{
+			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
+		else if (PlayersNumber == 10)
+		{
+			g_Config.m_SvScorelimit = 1000;
+			g_Config.m_SvTimelimit = 60;
+			pSelf->m_IsRatedGame = true;
+			pSelf->m_pController->DoWarmup(20);
+			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
+		else
+		{
+			g_Config.m_SvScorelimit = 800;
+			g_Config.m_SvTimelimit = 40;
+			pSelf->m_IsRatedGame = true;
+			pSelf->m_pController->DoWarmup(20);
+			char aBuf[256];
+			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
 	}
-	else if (RedTeamPlayers != BlueTeamPlayers)
+	else if(str_comp(g_Config.m_SvGametype, "rDM") == 0)
 	{
-		char aBuf[256];
-		str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
-		pSelf->SendChatTarget(-1, aBuf);
-	}
-	else if (PlayersNumber == 10)
-	{
-		g_Config.m_SvScorelimit = 1000;
-		g_Config.m_SvTimelimit = 60;
-		pSelf->m_IsRatedGame = true;
-		pSelf->m_pController->DoWarmup(20);
-	}
-	else
-	{
-		g_Config.m_SvScorelimit = 800;
-		g_Config.m_SvTimelimit = 40;
-		pSelf->m_IsRatedGame = true;
-		pSelf->m_pController->DoWarmup(20);
+		if (PlayersNumber != 2)
+		{
+			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 1on1 games are supported.");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
+		else if (RedTeamPlayers != BlueTeamPlayers)
+		{
+			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
+		else
+		{
+			g_Config.m_SvScorelimit = 10;
+			g_Config.m_SvTimelimit = 7;
+			pSelf->m_IsRatedGame = true;
+			pSelf->m_pController->DoWarmup(10);
+			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
+			pSelf->SendChatTarget(-1, aBuf);
+		}
 	}
 }
 

@@ -44,6 +44,9 @@ protected:
 	void CycleMap();
 	void ResetGame();
 
+	virtual const char* GetGameinfo();
+	virtual void ProcessRatedGame();
+
 	char m_aMapWish[128];
 
 

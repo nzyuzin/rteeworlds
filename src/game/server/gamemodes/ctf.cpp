@@ -1,8 +1,5 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#include <string>
-#include <sstream>
-
 #include <engine/shared/config.h>
 
 #include <game/mapitems.h>
@@ -12,8 +9,6 @@
 #include <game/server/player.h>
 #include <game/server/gamecontext.h>
 #include "ctf.h"
-
-#include "reportscore.h"
 
 CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer)
 : IGameController(pGameServer)
@@ -71,76 +66,6 @@ int CGameControllerCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	return HadFlag;
 }
 
-std::string ToString(int I)
-{
-	std::ostringstream StringStream;
-	StringStream << I;
-	return StringStream.str();
-}
-
-std::string TeamToString(int Team)
-{
-	return TEAM_RED == Team ? "RED" : "BLUE";
-}
-
-std::string GuardQuotes(std::string Str)
-{
-	std::string Result = "";
-	for (int i = 0; i < Str.length(); i++)
-	{
-		if (Str[i] == '"')
-			Result += "\\\"";
-		else
-			Result += Str[i];
-	}
-	return Result;
-}
-
-const char* CGameControllerCTF::GetGameinfo()
-{
-	std::string Result = "";
-	Result += "Gametype: rCTF\n";
-	Result += "Map: ";
-	Result += g_Config.m_SvMap;
-	Result += "\n";
-	Result += "Gametime: ";
-	int GameTime = (Server()->Tick() - m_RoundStartTick) / Server()->TickSpeed();
-	Result += ToString(GameTime);
-	Result += "\n";
-
-	int WinnerTeam = m_aTeamscore[TEAM_RED] > m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
-	Result += "Result: " + TeamToString(WinnerTeam) + "\n";
-	Result += "Players:\n";
-	for(int c = 0; c < MAX_CLIENTS; c++)
-	{
-		CPlayer *pPlayer = GameServer()->m_apPlayers[c];
-		if(!pPlayer)
-			continue;
-
-		if(pPlayer->GetTeam() != TEAM_SPECTATORS)
-		{
-			std::string Name = GuardQuotes(Server()->ClientName(pPlayer->GetCID()));
-			std::string Clan = GuardQuotes(Server()->ClientClan(pPlayer->GetCID()));
-			Result = Result + "\"" + Name + "\" \"" + Clan + "\" " + ToString(pPlayer->m_Score) + " " + TeamToString(pPlayer->GetTeam()) + "\n";
-		}
-	}
-	return Result.c_str();
-}
-
-void CGameControllerCTF::ProcessRatedGame()
-{
-#ifndef CONF_DEBUG
-	if (!GameServer()->m_IsRatedGame)
-	{
-		return;
-	}
-#endif
-	GameServer()->m_IsRatedGame = false;
-	g_Config.m_SvTimelimit = 0;
-	g_Config.m_SvScorelimit = 0;
-	ReportGameinfo(GetGameinfo());
-}
-
 void CGameControllerCTF::DoWincheck()
 {
 	if(m_GameOverTick == -1 && !m_Warmup)
@@ -152,18 +77,12 @@ void CGameControllerCTF::DoWincheck()
 			if(m_SuddenDeath)
 			{
 				if(m_aTeamscore[TEAM_RED]/100 != m_aTeamscore[TEAM_BLUE]/100)
-				{
-					ProcessRatedGame();
 					EndRound();
-				}
 			}
 			else
 			{
 				if(m_aTeamscore[TEAM_RED] != m_aTeamscore[TEAM_BLUE])
-				{
-					ProcessRatedGame();
 					EndRound();
-				}
 				else
 					m_SuddenDeath = 1;
 			}
