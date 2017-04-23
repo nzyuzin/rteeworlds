@@ -58,6 +58,8 @@ class CConsole : public IConsole
 	static void ConToggleStroke(IResult *pResult, void *pUser);
 	static void ConModCommandAccess(IResult *pResult, void *pUser);
 	static void ConModCommandStatus(IConsole::IResult *pResult, void *pUser);
+	static void ConCommandStatus(IConsole::IResult *pResult, void *pUser);
+	static void ConUserCommandStatus(IConsole::IResult *pResult, void *pUser);
 
 	void ExecuteFileRecurse(const char *pFilename);
 	void ExecuteLineStroked(int Stroke, const char *pStr);
