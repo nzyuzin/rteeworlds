@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <new>
 #include <base/math.h>
+#include <base/system.h>
 #include <engine/shared/config.h>
 #include <engine/map.h>
 #include <engine/console.h>
@@ -12,6 +13,7 @@
 #include "gamemodes/dm.h"
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
+#include "gamemodes/reportscore.h"
 #include "gamemodes/mod.h"
 
 enum
@@ -286,6 +288,35 @@ void CGameContext::SendBroadcast(const char *pText, int ClientID)
 	CNetMsg_Sv_Broadcast Msg;
 	Msg.m_pMessage = pText;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
+}
+
+void CGameContext::ProcessCommand(int ClientID, const char *pCommand)
+{
+	const char *pArguments = str_skip_whitespaces(str_skip_to_whitespace((char*)pCommand));
+	char aCommandName[64];
+	int i;
+	for (i = 0; pCommand[i] != ' ' && pCommand[i] != '\0' && i < 63; i++)
+		aCommandName[i] = pCommand[i];
+	aCommandName[i] = '\0';
+	if (str_comp(aCommandName, "/rank") == 0)
+	{
+		char RankRequest[512];
+		const char *pName;
+		if (str_length(pArguments) == 0)
+		{
+			pName = Server()->ClientName(ClientID);
+		}
+		else
+		{
+			pName = pArguments;
+		}
+		str_format(RankRequest, sizeof(RankRequest), "Player_request\nPlayer_rank\n%d\n127.0.0.1:18383\n\"%s\"", ClientID, pName);
+		ReportGameinfo(RankRequest);
+	}
+	else
+	{
+		SendChatTarget(ClientID, "Unknown command");
+	}
 }
 
 //
@@ -652,9 +683,15 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(Length == 0 || (g_Config.m_SvSpamprotection && pPlayer->m_LastChat && pPlayer->m_LastChat+Server()->TickSpeed()*((15+Length)/16) > Server()->Tick()))
 				return;
 
-			pPlayer->m_LastChat = Server()->Tick();
-
-			SendChat(ClientID, Team, pMsg->m_pMessage);
+			if (pMsg->m_pMessage[0] == '/')
+			{
+				ProcessCommand(ClientID, pMsg->m_pMessage);
+			}
+			else
+			{
+				pPlayer->m_LastChat = Server()->Tick();
+				SendChat(ClientID, Team, pMsg->m_pMessage);
+			}
 		}
 		else if(MsgID == NETMSGTYPE_CL_CALLVOTE)
 		{
@@ -1484,7 +1521,14 @@ void CGameContext::ConCbReportRank(IConsole::IResult *pResult, void *pUserData)
 		return;
 
 	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "%d. %s Rating: %d, requested by %s", Rank, pPlayerName, Rating, pSelf->Server()->ClientName(ClientID));
+	if (Rating == -1)
+	{
+		str_format(aBuf, sizeof(aBuf), "%s doesn't have rating yet", pPlayerName);
+	}
+	else
+	{
+		str_format(aBuf, sizeof(aBuf), "%d. %s Rating: %d, requested by %s", Rank, pPlayerName, Rating, pSelf->Server()->ClientName(ClientID));
+	}
 	pSelf->SendChatTarget(-1, aBuf);
 }
 
@@ -1529,7 +1573,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
 
 	Console()->Register("start_rated_game", "", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game");
-	Console()->Register("_cb_report_rank", "iii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
+	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 }

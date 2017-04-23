@@ -93,6 +93,8 @@ public:
 
 	int m_LockTeams;
 
+	void ProcessCommand(int ClientID, const char *pCommand);
+
 	// rated game
 	bool m_IsRatedGame;
 
