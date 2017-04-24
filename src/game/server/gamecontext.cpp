@@ -1499,18 +1499,16 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 		}
 	}
 
-	if(str_comp(g_Config.m_SvGametype, "rCTF") == 0)
+	char aBuf[256];
+	if(str_comp_nocase(g_Config.m_SvGametype, "rCTF") == 0)
 	{
-		char aBuf[256];
 		if (PlayersNumber != 10 && PlayersNumber != 8)
 		{
 			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 4on4 and 5on5 games are supported.");
-			pSelf->SendChatTarget(-1, aBuf);
 		}
 		else if (RedTeamPlayers != BlueTeamPlayers)
 		{
 			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
-			pSelf->SendChatTarget(-1, aBuf);
 		}
 		else if (PlayersNumber == 10)
 		{
@@ -1519,7 +1517,6 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 			pSelf->m_IsRatedGame = true;
 			pSelf->m_pController->DoWarmup(20);
 			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-			pSelf->SendChatTarget(-1, aBuf);
 		}
 		else
 		{
@@ -1529,21 +1526,14 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 			pSelf->m_pController->DoWarmup(20);
 			char aBuf[256];
 			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-			pSelf->SendChatTarget(-1, aBuf);
 		}
 	}
-	else if(str_comp(g_Config.m_SvGametype, "rDM") == 0)
+	else if(str_comp_nocase(g_Config.m_SvGametype, "rDM") == 0)
 	{
 		char aBuf[256];
 		if (PlayersNumber != 2)
 		{
 			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 1on1 games are supported.");
-			pSelf->SendChatTarget(-1, aBuf);
-		}
-		else if (RedTeamPlayers != BlueTeamPlayers)
-		{
-			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
-			pSelf->SendChatTarget(-1, aBuf);
 		}
 		else
 		{
@@ -1552,9 +1542,13 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 			pSelf->m_IsRatedGame = true;
 			pSelf->m_pController->DoWarmup(10);
 			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-			pSelf->SendChatTarget(-1, aBuf);
 		}
 	}
+	else
+	{
+			str_format(aBuf, sizeof(aBuf), "Rated games with gametype %s are not supported.", g_Config.m_SvGametype);
+	}
+	pSelf->SendChatTarget(-1, aBuf);
 }
 
 void CGameContext::ConCbReportRank(IConsole::IResult *pResult, void *pUserData)
