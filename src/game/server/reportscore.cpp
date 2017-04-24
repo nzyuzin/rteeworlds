@@ -28,7 +28,7 @@ void escape_quotes(char* dest, const char* src, int len)
 
 void PlayerRequestMessage(char *pResult, size_t Size, const char *pType, int ClientID, const char *pContent)
 {
-	str_format(pResult, Size, "Player_request\n%s\n%d\n127.0.0.1:%d\n\"%s\"", pType, ClientID, g_Config.m_EcPort, pContent);
+	str_format(pResult, Size, "Player_request\n%s\n%d\n\"%s\"", pType, ClientID, pContent);
 }
 
 void PlayerRankRequestMessage(char *pResult, size_t Size, int ClientID, const char *pName)
