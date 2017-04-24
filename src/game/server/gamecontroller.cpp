@@ -797,6 +797,7 @@ std::string GuardQuotes(std::string Str)
 const char* IGameController::GetGameinfo()
 {
 	std::string Result = "";
+	Result += "Gameinfo\n";
 	Result += "Gametype: ";
 	Result += m_pGameType;
 	Result += "\n";
@@ -838,5 +839,9 @@ void IGameController::ProcessRatedGame()
 	GameServer()->m_IsRatedGame = false;
 	g_Config.m_SvTimelimit = 0;
 	g_Config.m_SvScorelimit = 0;
+	const char* Gameinfo = GetGameinfo();
+	char aBuf[1024];
+	str_format(aBuf, sizeof(aBuf), "Reporting gameinfo:\n%s", Gameinfo);
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 	ReportGameinfo(GetGameinfo());
 }
