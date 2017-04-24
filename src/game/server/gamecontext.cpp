@@ -1571,6 +1571,25 @@ void CGameContext::ConCbReportRank(IConsole::IResult *pResult, void *pUserData)
 	pSelf->SendChatTarget(-1, aBuf);
 }
 
+void CGameContext::ConCbReportTop5(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "Top 5 players by rating:");
+	pSelf->SendChatTarget(ClientID, aBuf);
+	for (int i = 0; i < 5; i++)
+	{
+		const char *pPlayerName = pResult->GetString((i * 2) + 1);
+		int Rating = pResult->GetInteger((i * 2) + 2);
+		if (Rating != -1)
+		{
+			str_format(aBuf, sizeof(aBuf), "%d. %s Rating: %d", i + 1, pPlayerName, Rating);
+			pSelf->SendChatTarget(ClientID, aBuf);
+		}
+	}
+}
+
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	pfnCallback(pResult, pCallbackUserData);
@@ -1615,6 +1634,7 @@ void CGameContext::OnConsoleInit()
 
 	Console()->Register("start_rated_game", "", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game");
 	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
+	Console()->Register("_cb_report_top5", "isisisisisi", CFGFLAG_SERVER, ConCbReportTop5, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 

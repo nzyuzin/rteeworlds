@@ -70,9 +70,11 @@ class CGameContext : public IGameServer
 	static void ConVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
-	static void ConRank(IConsole::IResult *pResult, void *pUserData);
 	static void ConStartRatedGame(IConsole::IResult *pResult, void *pUserData);
+	static void ConRank(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbReportRank(IConsole::IResult *pResult, void *pUserData);
+	static void ConTop5(IConsole::IResult *pResult, void *pUserData);
+	static void ConCbReportTop5(IConsole::IResult *pResult, void *pUserData);
 
 	CGameContext(int Resetting);
 	void Construct(int Resetting);
