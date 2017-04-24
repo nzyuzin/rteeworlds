@@ -1528,7 +1528,7 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
 		}
 	}
-	else if(str_comp_nocase(g_Config.m_SvGametype, "rDM") == 0)
+	else if(str_comp_nocase(g_Config.m_SvGametype, "rTDM") == 0)
 	{
 		char aBuf[256];
 		if (PlayersNumber != 2)
