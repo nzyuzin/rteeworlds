@@ -1489,7 +1489,7 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 	int BlueTeamPlayers = 0;
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if (pSelf->m_apPlayers[i] != NULL)
+		if (pSelf->m_apPlayers[i] != NULL && pSelf->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 		{
 			PlayersNumber++;
 			if (pSelf->m_apPlayers[i]->GetTeam() == TEAM_RED)
