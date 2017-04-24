@@ -1520,8 +1520,7 @@ void CGameContext::ConCbReportTop5(IConsole::IResult *pResult, void *pUserData)
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	int ClientID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
 	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "Top 5 players by rating:");
-	pSelf->SendChatTarget(ClientID, aBuf);
+	pSelf->SendChatTarget(ClientID, "----------  Top 5 Rating  -----------");
 	for (int i = 0; i < 5; i++)
 	{
 		const char *pPlayerName = pResult->GetString((i * 2) + 1);
@@ -1532,6 +1531,7 @@ void CGameContext::ConCbReportTop5(IConsole::IResult *pResult, void *pUserData)
 			pSelf->SendChatTarget(ClientID, aBuf);
 		}
 	}
+	pSelf->SendChatTarget(ClientID, "-----------------------------------------");
 }
 
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
