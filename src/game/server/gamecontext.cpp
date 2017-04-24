@@ -1647,9 +1647,9 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	// select gametype
 	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
-	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
+	else if(str_comp(g_Config.m_SvGametype, "rctf") == 0)
 		m_pController = new CGameControllerCTF(this);
-	else if(str_comp(g_Config.m_SvGametype, "tdm") == 0)
+	else if(str_comp(g_Config.m_SvGametype, "rtdm") == 0)
 		m_pController = new CGameControllerTDM(this);
 	else
 		m_pController = new CGameControllerDM(this);
