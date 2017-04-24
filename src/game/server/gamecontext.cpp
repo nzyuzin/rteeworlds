@@ -14,6 +14,7 @@
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
+#include "ratedgame.h"
 
 enum
 {
@@ -36,8 +37,6 @@ void CGameContext::Construct(int Resetting)
 	m_NumVoteOptions = 0;
 	m_LockTeams = 0;
 	m_ChatResponseTargetID = -1;
-
-	m_IsRatedGame = false;
 
 	if(Resetting==NO_RESET)
 		m_pVoteOptionHeap = new CHeap();
@@ -581,6 +580,10 @@ void CGameContext::OnClientConnected(int ClientID)
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {
 	AbortVoteKickOnDisconnect(ClientID);
+	if (m_pRatedGame->IsRatedGame() && m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS)
+	{
+		m_pRatedGame->OnClientDrop(ClientID);
+	}
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
@@ -1484,69 +1487,10 @@ void CGameContext::ConVote(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	int PlayersNumber = 0;
-	int RedTeamPlayers = 0;
-	int BlueTeamPlayers = 0;
-	for (int i = 0; i < MAX_CLIENTS; i++)
-	{
-		if (pSelf->m_apPlayers[i] != NULL && pSelf->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
-		{
-			PlayersNumber++;
-			if (pSelf->m_apPlayers[i]->GetTeam() == TEAM_RED)
-				RedTeamPlayers++;
-			else if (pSelf->m_apPlayers[i]->GetTeam() == TEAM_BLUE)
-				BlueTeamPlayers++;
-		}
-	}
-
-	char aBuf[256];
-	if(str_comp_nocase(g_Config.m_SvGametype, "rCTF") == 0)
-	{
-		if (PlayersNumber != 10 && PlayersNumber != 8)
-		{
-			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 4on4 and 5on5 games are supported.");
-		}
-		else if (RedTeamPlayers != BlueTeamPlayers)
-		{
-			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Teams are not balanced.");
-		}
-		else if (PlayersNumber == 10)
-		{
-			g_Config.m_SvScorelimit = 1000;
-			g_Config.m_SvTimelimit = 60;
-			pSelf->m_IsRatedGame = true;
-			pSelf->m_pController->DoWarmup(20);
-			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-		}
-		else
-		{
-			g_Config.m_SvScorelimit = 800;
-			g_Config.m_SvTimelimit = 40;
-			pSelf->m_IsRatedGame = true;
-			pSelf->m_pController->DoWarmup(20);
-			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-		}
-	}
-	else if(str_comp_nocase(g_Config.m_SvGametype, "rTDM") == 0)
-	{
-		if (PlayersNumber != 2)
-		{
-			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 1on1 games are supported.");
-		}
-		else
-		{
-			g_Config.m_SvScorelimit = 10;
-			g_Config.m_SvTimelimit = 7;
-			pSelf->m_IsRatedGame = true;
-			pSelf->m_pController->DoWarmup(10);
-			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-		}
-	}
+	if(pResult->NumArguments())
+		pSelf->m_pController->DoWarmup(pResult->GetInteger(0));
 	else
-	{
-			str_format(aBuf, sizeof(aBuf), "Rated games with gametype %s are not supported.", g_Config.m_SvGametype);
-	}
-	pSelf->SendChatTarget(-1, aBuf);
+		pSelf->m_pRatedGame->TryStartRatedGame(-1);
 }
 
 void CGameContext::ConCbReportRank(IConsole::IResult *pResult, void *pUserData)
@@ -1632,7 +1576,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
 
-	Console()->Register("start_rated_game", "", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game");
+	Console()->Register("start_rated_game", "?i", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game with an (optional) warmup time");
 	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 	Console()->Register("_cb_report_top5", "isisisisisi", CFGFLAG_SERVER, ConCbReportTop5, this, "Internal function");
 
@@ -1671,6 +1615,8 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		m_pController = new CGameControllerTDM(this);
 	else
 		m_pController = new CGameControllerDM(this);
+
+	m_pRatedGame = new CRatedGame(this);
 
 	// setup core world
 	//for(int i = 0; i < MAX_CLIENTS; i++)
@@ -1719,6 +1665,8 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 void CGameContext::OnShutdown()
 {
 	delete m_pController;
+	delete m_pRatedGame;
+	m_pRatedGame = 0;
 	m_pController = 0;
 	Clear();
 }

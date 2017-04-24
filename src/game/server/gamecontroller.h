@@ -44,17 +44,9 @@ protected:
 	void CycleMap();
 	void ResetGame();
 
-	virtual const char* GetGameinfo();
-	virtual void ProcessRatedGame();
-
 	char m_aMapWish[128];
 
-
-	int m_RoundStartTick;
-	int m_GameOverTick;
 	int m_SuddenDeath;
-
-	int m_aTeamscore[2];
 
 	int m_Warmup;
 	int m_UnpauseTimer;
@@ -66,6 +58,10 @@ protected:
 
 public:
 	const char *m_pGameType;
+
+	int m_RoundStartTick;
+	int m_GameOverTick;
+	int m_aTeamscore[2];
 
 	bool IsTeamplay() const;
 	bool IsGameOver() const { return m_GameOverTick != -1; }

@@ -12,6 +12,7 @@
 
 #include "eventhandler.h"
 #include "gamecontroller.h"
+#include "ratedgame.h"
 #include "gameworld.h"
 #include "player.h"
 
@@ -96,14 +97,12 @@ public:
 
 	IGameController *m_pController;
 	CGameWorld m_World;
+	CRatedGame *m_pRatedGame;
 
 	// helper functions
 	class CCharacter *GetPlayerChar(int ClientID);
 
 	int m_LockTeams;
-
-	// rated game
-	bool m_IsRatedGame;
 
 	// voting
 	void StartVote(const char *pDesc, const char *pCommand, const char *pReason);
