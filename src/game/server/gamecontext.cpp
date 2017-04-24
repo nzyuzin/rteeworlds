@@ -1524,13 +1524,11 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 			g_Config.m_SvTimelimit = 40;
 			pSelf->m_IsRatedGame = true;
 			pSelf->m_pController->DoWarmup(20);
-			char aBuf[256];
 			str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
 		}
 	}
 	else if(str_comp_nocase(g_Config.m_SvGametype, "rTDM") == 0)
 	{
-		char aBuf[256];
 		if (PlayersNumber != 2)
 		{
 			str_format(aBuf, sizeof(aBuf), "Cannot start rated game. Only 1on1 games are supported.");
