@@ -580,10 +580,7 @@ void CGameContext::OnClientConnected(int ClientID)
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {
 	AbortVoteKickOnDisconnect(ClientID);
-	if (m_pRatedGame->IsRatedGame() && m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS)
-	{
-		m_pRatedGame->OnClientDrop(ClientID);
-	}
+	m_pRatedGame->OnClientDrop(ClientID);
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
@@ -1488,7 +1485,7 @@ void CGameContext::ConStartRatedGame(IConsole::IResult *pResult, void *pUserData
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	if(pResult->NumArguments())
-		pSelf->m_pController->DoWarmup(pResult->GetInteger(0));
+		pSelf->m_pRatedGame->TryStartRatedGame(pResult->GetInteger(0));
 	else
 		pSelf->m_pRatedGame->TryStartRatedGame(-1);
 }
@@ -1604,7 +1601,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("start_rated_game", "?i", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game with an (optional) warmup time");
 	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 	Console()->Register("_cb_report_top5", "isisisisisi", CFGFLAG_SERVER, ConCbReportTop5, this, "Internal function");
-	Console()->Register("_cb_auth_player", "i", CFGFLAG_SERVER, ConCbAuthPlayer, this, "Internal function");
+	Console()->Register("_cb_auth_player", "is", CFGFLAG_SERVER, ConCbAuthPlayer, this, "Internal function");
 	Console()->Register("_cb_bad_auth", "i", CFGFLAG_SERVER, ConCbBadAuth, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);

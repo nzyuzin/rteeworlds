@@ -13,7 +13,7 @@ CRatedGame::CRatedGame(class CGameContext *pGameServer)
 	m_pServer = m_pGameServer->Server();
 	m_IsRatedGame = false;
 	for (int i = 0; i < MAX_CLIENTS; i++)
-		m_apAuthedPlayers[i] = NULL;
+		m_apAuthedPlayers[i][0] = '\0';
 }
 
 CRatedGame::~CRatedGame() { }
@@ -25,7 +25,7 @@ void CRatedGame::TryStartRatedGame(int Warmup)
 	int BlueTeamPlayers = 0;
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if (m_pGameServer->m_apPlayers[i] != NULL && m_apAuthedPlayers[i] && m_pGameServer->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
+		if (m_pGameServer->m_apPlayers[i] != NULL && IsAuthed(i) && m_pGameServer->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 		{
 			PlayersNumber++;
 			if (m_pGameServer->m_apPlayers[i]->GetTeam() == TEAM_RED)
@@ -103,8 +103,8 @@ void CRatedGame::SendGameinfo()
 		}
 	}
 	char aLogBuf[1064];
-	str_format(aLogBuf, sizeof(aLogBuf), "Reporting gameinfo:\n%s", aLogBuf);
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+	str_format(aLogBuf, sizeof(aLogBuf), "Reporting gameinfo:\n%s", aBuf);
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aLogBuf);
 	MessageRatingsDb(aBuf);
 }
 
@@ -120,19 +120,28 @@ void CRatedGame::OnEndRound()
 
 void CRatedGame::OnClientDrop(int ClientID)
 {
-	EndRatedGame();
-	m_apAuthedPlayers[ClientID] = NULL;
+	if (IsRatedGame() && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS)
+	{
+		EndRatedGame();
+	}
+	m_apAuthedPlayers[ClientID][0] = '\0';
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "Client %d deauthed", ClientID);
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 }
 
 void CRatedGame::AuthClient(int ClientID, const char *pName)
 {
-	m_apAuthedPlayers[ClientID] = pName;
+	str_copy(m_apAuthedPlayers[ClientID], pName, sizeof(m_apAuthedPlayers[ClientID]));
 	GameServer()->SendChatTarget(ClientID, "Authorisation succeeded");
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "Client %d authed", ClientID);
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 }
 
 bool CRatedGame::IsAuthed(int ClientID)
 {
-	return m_apAuthedPlayers[ClientID] != NULL;
+	return m_apAuthedPlayers[ClientID][0] != '\0';
 }
 
 void CRatedGame::BadAuth(int ClientID)

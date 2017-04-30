@@ -8,7 +8,7 @@ class CRatedGame
 	class IServer *m_pServer;
 
 	bool m_IsRatedGame;
-	const char *m_apAuthedPlayers[MAX_CLIENTS];
+	char m_apAuthedPlayers[MAX_CLIENTS][MAX_NAME_LENGTH];
 
 protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
