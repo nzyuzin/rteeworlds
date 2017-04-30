@@ -76,6 +76,9 @@ class CGameContext : public IGameServer
 	static void ConCbReportRank(IConsole::IResult *pResult, void *pUserData);
 	static void ConTop5(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbReportTop5(IConsole::IResult *pResult, void *pUserData);
+	static void ConAuth(IConsole::IResult *pResult, void *pUserData);
+	static void ConCbAuthPlayer(IConsole::IResult *pResult, void *pUserData);
+	static void ConCbBadAuth(IConsole::IResult *pResult, void *pUserData);
 
 	CGameContext(int Resetting);
 	void Construct(int Resetting);

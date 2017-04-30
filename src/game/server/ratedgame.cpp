@@ -12,6 +12,8 @@ CRatedGame::CRatedGame(class CGameContext *pGameServer)
 	m_pGameServer = pGameServer;
 	m_pServer = m_pGameServer->Server();
 	m_IsRatedGame = false;
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		m_apAuthedPlayers[i] = NULL;
 }
 
 CRatedGame::~CRatedGame() { }
@@ -23,7 +25,7 @@ void CRatedGame::TryStartRatedGame(int Warmup)
 	int BlueTeamPlayers = 0;
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if (m_pGameServer->m_apPlayers[i] != NULL && m_pGameServer->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
+		if (m_pGameServer->m_apPlayers[i] != NULL && m_apAuthedPlayers[i] && m_pGameServer->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 		{
 			PlayersNumber++;
 			if (m_pGameServer->m_apPlayers[i]->GetTeam() == TEAM_RED)
@@ -90,10 +92,10 @@ void CRatedGame::SendGameinfo()
 
 		char aPlayerBuf[128];
 
-		if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+		if(pPlayer->GetTeam() != TEAM_SPECTATORS && IsAuthed(c))
 		{
 			char aName[MAX_NAME_LENGTH * 2];
-			escape_quotes(aName, Server()->ClientName(pPlayer->GetCID()), sizeof(aName));
+			escape_quotes(aName, m_apAuthedPlayers[c], sizeof(aName));
 			char aClan[MAX_CLAN_LENGTH * 2];
 			escape_quotes(aClan, Server()->ClientClan(pPlayer->GetCID()), sizeof(aClan));
 			str_format(aPlayerBuf, sizeof(aPlayerBuf), "\"%s\" \"%s\" %d %s\n", aName, aClan, pPlayer->m_Score, TeamToString(pPlayer->GetTeam()));
@@ -119,6 +121,23 @@ void CRatedGame::OnEndRound()
 void CRatedGame::OnClientDrop(int ClientID)
 {
 	EndRatedGame();
+	m_apAuthedPlayers[ClientID] = NULL;
+}
+
+void CRatedGame::AuthClient(int ClientID, const char *pName)
+{
+	m_apAuthedPlayers[ClientID] = pName;
+	GameServer()->SendChatTarget(ClientID, "Authorisation succeeded");
+}
+
+bool CRatedGame::IsAuthed(int ClientID)
+{
+	return m_apAuthedPlayers[ClientID] != NULL;
+}
+
+void CRatedGame::BadAuth(int ClientID)
+{
+	GameServer()->SendChatTarget(ClientID, "Authorisation failed");
 }
 
 void CRatedGame::BeginRatedGame(int Scorelimit, int Timelimit, int Warmup)
@@ -127,9 +146,7 @@ void CRatedGame::BeginRatedGame(int Scorelimit, int Timelimit, int Warmup)
 	g_Config.m_SvScorelimit = Scorelimit;
 	g_Config.m_SvTimelimit = Timelimit;
 	GameServer()->m_pController->DoWarmup(Warmup);
-	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "Starting rated game. Good luck!");
-	GameServer()->SendChatTarget(-1, aBuf);
+	GameServer()->SendChatTarget(-1, "Starting rated game. Good luck!");
 }
 
 void CRatedGame::EndRatedGame()

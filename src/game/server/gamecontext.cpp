@@ -1534,6 +1534,31 @@ void CGameContext::ConCbReportTop5(IConsole::IResult *pResult, void *pUserData)
 	pSelf->SendChatTarget(ClientID, "-----------------------------------------");
 }
 
+void CGameContext::ConCbAuthPlayer(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pResult->GetInteger(0);
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+	if (!pSelf->m_apPlayers[ClientID])
+		return;
+	const char* pName = pResult->GetString(1);
+
+	pSelf->m_pRatedGame->AuthClient(ClientID, pName);
+}
+
+void CGameContext::ConCbBadAuth(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pResult->GetInteger(0);
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+	if (!pSelf->m_apPlayers[ClientID])
+		return;
+
+	pSelf->m_pRatedGame->BadAuth(ClientID);
+}
+
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	pfnCallback(pResult, pCallbackUserData);
@@ -1579,6 +1604,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("start_rated_game", "?i", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game with an (optional) warmup time");
 	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 	Console()->Register("_cb_report_top5", "isisisisisi", CFGFLAG_SERVER, ConCbReportTop5, this, "Internal function");
+	Console()->Register("_cb_auth_player", "i", CFGFLAG_SERVER, ConCbAuthPlayer, this, "Internal function");
+	Console()->Register("_cb_bad_auth", "i", CFGFLAG_SERVER, ConCbBadAuth, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 

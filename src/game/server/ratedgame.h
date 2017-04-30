@@ -1,5 +1,6 @@
 #ifndef GAME_SERVER_RATEDGAME_H
 #define GAME_SERVER_RATEDGAME_H
+#include <engine/shared/protocol.h>
 
 class CRatedGame
 {
@@ -7,6 +8,7 @@ class CRatedGame
 	class IServer *m_pServer;
 
 	bool m_IsRatedGame;
+	const char *m_apAuthedPlayers[MAX_CLIENTS];
 
 protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
@@ -22,6 +24,11 @@ public:
 	void OnClientDrop(int ClientID);
 	void BeginRatedGame(int Scorelimit, int Timelimit, int Warmup);
 	void EndRatedGame();
+
+	void AuthClient(int ClientID, const char* pName);
+	void BadAuth(int ClientID);
+
+	bool IsAuthed(int ClientID);
 
 	void SendGameinfo();
 };
