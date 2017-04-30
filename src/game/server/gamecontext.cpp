@@ -1556,6 +1556,19 @@ void CGameContext::ConCbBadAuth(IConsole::IResult *pResult, void *pUserData)
 	pSelf->m_pRatedGame->BadAuth(ClientID);
 }
 
+void CGameContext::ConCbError(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pResult->GetInteger(0);
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+	if (!pSelf->m_apPlayers[ClientID])
+		return;
+	const char *pErrorMessage = pResult->GetString(1);
+
+	pSelf->SendChatTarget(ClientID, pErrorMessage);
+}
+
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	pfnCallback(pResult, pCallbackUserData);
@@ -1603,6 +1616,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("_cb_report_top5", "isisisisisi", CFGFLAG_SERVER, ConCbReportTop5, this, "Internal function");
 	Console()->Register("_cb_auth_player", "is", CFGFLAG_SERVER, ConCbAuthPlayer, this, "Internal function");
 	Console()->Register("_cb_bad_auth", "i", CFGFLAG_SERVER, ConCbBadAuth, this, "Internal function");
+	Console()->Register("_cb_error", "is", CFGFLAG_SERVER, ConCbError, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 

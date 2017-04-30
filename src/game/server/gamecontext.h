@@ -79,6 +79,7 @@ class CGameContext : public IGameServer
 	static void ConAuth(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbAuthPlayer(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbBadAuth(IConsole::IResult *pResult, void *pUserData);
+	static void ConCbError(IConsole::IResult *pResult, void *pUserData);
 
 	CGameContext(int Resetting);
 	void Construct(int Resetting);
