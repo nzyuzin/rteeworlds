@@ -1512,6 +1512,8 @@ void CGameContext::ConCbReportRank(IConsole::IResult *pResult, void *pUserData)
 	}
 	else
 	{
+		if (Rank == 1 && str_comp_nocase(g_Config.m_SvGametype, "rTDM") == 0)
+			pSelf->SendChatTarget(-1, "~~~ THE DM KING ~~~");
 		str_format(aBuf, sizeof(aBuf), "%d. %s Rating: %d, requested by %s", Rank, pPlayerName, Rating, pSelf->Server()->ClientName(ClientID));
 	}
 	pSelf->SendChatTarget(-1, aBuf);
