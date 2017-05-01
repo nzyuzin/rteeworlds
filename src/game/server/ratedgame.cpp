@@ -130,6 +130,16 @@ void CRatedGame::OnClientDrop(int ClientID)
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 }
 
+void CRatedGame::OnAuthRequest(int ClientID, const char *pName, const char *pPassword)
+{
+	if (IsAuthed(ClientID))
+	{
+		GameServer()->SendChatTarget(ClientID, "You are already authorised");
+		return;
+	}
+	RequestAuth(ClientID, pName, pPassword);
+}
+
 void CRatedGame::AuthClient(int ClientID, const char *pName)
 {
 	str_copy(m_apAuthedPlayers[ClientID], pName, sizeof(m_apAuthedPlayers[ClientID]));

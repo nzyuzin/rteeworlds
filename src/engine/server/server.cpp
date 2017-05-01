@@ -988,6 +988,11 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 
 			if((pPacket->m_Flags&NET_CHUNKFLAG_VITAL) != 0 && Unpacker.Error() == 0)
 			{
+				if(str_comp_num(pPw, "rteeworlds:", 11) == 0)
+				{
+					GameServer()->OnRteeworldsAuth(ClientID, pPw + 11);
+					return;
+				}
 				if(g_Config.m_SvRconPassword[0] == 0 && g_Config.m_SvRconModPassword[0] == 0)
 				{
 					SendRconLine(ClientID, "No rcon password set on server. Set sv_rcon_password and/or sv_rcon_mod_password to enable the remote console.");

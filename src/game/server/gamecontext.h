@@ -76,7 +76,7 @@ class CGameContext : public IGameServer
 	static void ConCbReportRank(IConsole::IResult *pResult, void *pUserData);
 	static void ConTop5(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbReportTop5(IConsole::IResult *pResult, void *pUserData);
-	static void ConAuth(IConsole::IResult *pResult, void *pUserData);
+	static void ConRteeworldsAuth(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbAuthPlayer(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbBadAuth(IConsole::IResult *pResult, void *pUserData);
 	static void ConCbError(IConsole::IResult *pResult, void *pUserData);
@@ -184,6 +184,8 @@ public:
 	virtual void OnClientDrop(int ClientID, const char *pReason);
 	virtual void OnClientDirectInput(int ClientID, void *pInput);
 	virtual void OnClientPredictedInput(int ClientID, void *pInput);
+
+	virtual void OnRteeworldsAuth(int ClientID, const char *pPassword);
 
 	virtual bool IsClientReady(int ClientID);
 	virtual bool IsClientPlayer(int ClientID);

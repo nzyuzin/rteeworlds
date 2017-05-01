@@ -596,6 +596,11 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 	}
 }
 
+void CGameContext::OnRteeworldsAuth(int ClientID, const char *pPassword)
+{
+	m_pRatedGame->OnAuthRequest(ClientID, Server()->ClientName(ClientID), pPassword);
+}
+
 void CGameContext::SendChatResponse(const char *pLine, void *pUser)
 {
 	CGameContext *pSelf = (CGameContext *)pUser;
@@ -1531,6 +1536,18 @@ void CGameContext::ConCbReportTop5(IConsole::IResult *pResult, void *pUserData)
 	pSelf->SendChatTarget(ClientID, "-----------------------------------------");
 }
 
+void CGameContext::ConRteeworldsAuth(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pSelf->Server()->GetRconCID();
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+	if (!pSelf->m_apPlayers[ClientID])
+		return;
+	const char* pSecret = pResult->GetString(0);
+	pSelf->OnRteeworldsAuth(ClientID, pSecret);
+}
+
 void CGameContext::ConCbAuthPlayer(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
@@ -1614,6 +1631,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("start_rated_game", "?i", CFGFLAG_SERVER, ConStartRatedGame, this, "Start a rated game with an (optional) warmup time");
 	Console()->Register("_cb_report_rank", "isii", CFGFLAG_SERVER, ConCbReportRank, this, "Internal function");
 	Console()->Register("_cb_report_top5", "isisisisisi", CFGFLAG_SERVER, ConCbReportTop5, this, "Internal function");
+	Console()->Register("rteeworlds_auth", "s", CFGFLAG_SERVER, ConRteeworldsAuth, this, "Authenticates the player");
 	Console()->Register("_cb_auth_player", "is", CFGFLAG_SERVER, ConCbAuthPlayer, this, "Internal function");
 	Console()->Register("_cb_bad_auth", "i", CFGFLAG_SERVER, ConCbBadAuth, this, "Internal function");
 	Console()->Register("_cb_error", "is", CFGFLAG_SERVER, ConCbError, this, "Internal function");

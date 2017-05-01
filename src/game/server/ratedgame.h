@@ -22,6 +22,8 @@ public:
 	void TryStartRatedGame(int Warmup);
 	void OnEndRound();
 	void OnClientDrop(int ClientID);
+	void OnAuthRequest(int ClientID, const char *pName, const char *pPassword);
+
 	void BeginRatedGame(int Scorelimit, int Timelimit, int Warmup);
 	void EndRatedGame();
 
