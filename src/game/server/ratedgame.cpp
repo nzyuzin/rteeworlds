@@ -13,10 +13,17 @@ CRatedGame::CRatedGame(class CGameContext *pGameServer)
 	m_pServer = m_pGameServer->Server();
 	m_IsRatedGame = false;
 	for (int i = 0; i < MAX_CLIENTS; i++)
+	{
 		m_apAuthedPlayers[i][0] = '\0';
+		m_apPlayerStats[i] = new CPlayerStats(pGameServer);
+	}
 }
 
-CRatedGame::~CRatedGame() { }
+CRatedGame::~CRatedGame()
+{
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		delete m_apPlayerStats[i];
+}
 
 void CRatedGame::TryStartRatedGame(int Warmup)
 {
@@ -118,10 +125,21 @@ void CRatedGame::OnEndRound()
 	EndRatedGame();
 }
 
+void CRatedGame::OnStartRound()
+{
+	if (!GameServer()->m_pRatedGame->IsRatedGame())
+	{
+		return;
+	}
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		m_apPlayerStats[i]->Reset();
+}
+
 void CRatedGame::OnClientDrop(int ClientID)
 {
 	if (IsRatedGame() && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS)
 	{
+		m_apPlayerStats[ClientID]->Reset();
 		EndRatedGame();
 	}
 	m_apAuthedPlayers[ClientID][0] = '\0';
@@ -170,6 +188,8 @@ void CRatedGame::BeginRatedGame(int Scorelimit, int Timelimit, int Warmup)
 
 void CRatedGame::EndRatedGame()
 {
+	for (int i = 0; i < MAX_CLIENTS; i++)
+		m_apPlayerStats[i]->Reset();
 	m_IsRatedGame = false;
 	g_Config.m_SvScorelimit = 0;
 	g_Config.m_SvTimelimit = 0;
