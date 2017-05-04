@@ -343,6 +343,8 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 
 int IGameController::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
+	GameServer()->m_pRatedGame->OnKill(pVictim->GetPlayer()->GetCID(), pKiller->GetCID(), Weapon);
+
 	// do scoreing
 	if(!pKiller || Weapon == WEAPON_GAME)
 		return 0;

@@ -194,3 +194,12 @@ void CRatedGame::EndRatedGame()
 	g_Config.m_SvScorelimit = 0;
 	g_Config.m_SvTimelimit = 0;
 }
+
+void CRatedGame::OnKill(int VictimID, int KillerID, int Weapon)
+{
+	if (!IsRatedGame())
+		return;
+
+	m_apPlayerStats[VictimID]->OnDeath();
+	m_apPlayerStats[KillerID]->OnKill(VictimID, Weapon);
+}

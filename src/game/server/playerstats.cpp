@@ -24,7 +24,7 @@ void CPlayerStats::OnDeath()
 	m_Deaths++;
 }
 
-void CPlayerStats::OnKill(int Weapon, int Target)
+void CPlayerStats::OnKill(int Target, int Weapon)
 {
 	m_Kills++;
 	m_HammerKills++;

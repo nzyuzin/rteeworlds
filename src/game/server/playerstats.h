@@ -28,7 +28,7 @@ class CPlayerStats
 
 	void Reset();
 	void OnDeath();
-	void OnKill(int Weapon, int Target);
+	void OnKill(int Target, int Weapon);
 	void OnFlagReturn();
 	void OnFlagGrab();
 	void OnFlagCapture();

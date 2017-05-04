@@ -37,5 +37,8 @@ public:
 	bool IsAuthed(int ClientID);
 
 	void SendGameinfo();
+
+	// stats
+	void OnKill(int VictimID, int KillerID, int Weapon);
 };
 #endif
