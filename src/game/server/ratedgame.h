@@ -37,10 +37,13 @@ public:
 	bool IsAuthed(int ClientID);
 
 	void SendGameinfo();
+	void PrintStats(int ClientID, const char* pStatsType, int TotalGames, int HammerKills, int GunKills, int ShotgunKills, int GrenadeKills, int RifleKills, int Deaths, int Suicides, int FlagGrabs, int FlagCaptures, int FlagReturns, int FlagCarrierKills);
+	void ReportCurrentStats(int ClientID);
+	void ReportStats(int ClientID);
 
 	// stats
 	void OnKill(int VictimID, int KillerID, int Weapon);
-	void OnFlaggerKill(int KillerID);
+	void OnFlagCarrierKill(int KillerID);
 
 	void OnFlagCapture(int ClientID);
 	void OnFlagReturn(int ClientID);

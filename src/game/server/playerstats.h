@@ -7,7 +7,6 @@ class CPlayerStats
 
 	int m_ClientID;
 
-	int m_Kills;
 	int m_HammerKills;
 	int m_GunKills;
 	int m_ShotgunKills;
@@ -19,7 +18,7 @@ class CPlayerStats
 	int m_FlagGrabs;
 	int m_FlagCaptures;
 	int m_FlagReturns;
-	int m_FlaggerKills;
+	int m_FlagCarrierKills;
 
 	protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
@@ -29,12 +28,25 @@ class CPlayerStats
 	CPlayerStats(class CGameContext *pGameServer, int ClientID);
 	~CPlayerStats();
 
+	int HammerKills() const { return m_HammerKills; }
+	int GunKills() const { return m_GunKills; }
+	int ShotgunKills() const { return m_ShotgunKills; }
+	int GrenadeKills() const { return m_GrenadeKills; }
+	int RifleKills() const { return m_RifleKills; }
+
+	int Deaths() const { return m_Deaths; }
+	int Suicides() const { return m_Suicides; }
+	int FlagGrabs() const { return m_FlagGrabs; }
+	int FlagCaptures() const { return m_FlagCaptures; }
+	int FlagReturns() const { return m_FlagReturns; }
+	int FlagCarrierKills() const { return m_FlagCarrierKills; }
+
 	void Reset();
 
 	void OnDeath();
 
 	void OnKill(int Target, int Weapon);
-	void OnFlaggerKill();
+	void OnFlagCarrierKill();
 
 	void OnFlagReturn();
 	void OnFlagGrab();

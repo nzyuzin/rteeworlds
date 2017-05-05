@@ -59,7 +59,7 @@ int CGameControllerCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 			if(pKiller && pKiller->GetTeam() != pVictim->GetPlayer()->GetTeam())
 				pKiller->m_Score++;
 
-			GameServer()->m_pRatedGame->OnFlaggerKill(pKiller->GetCID());
+			GameServer()->m_pRatedGame->OnFlagCarrierKill(pKiller->GetCID());
 
 			HadFlag |= 1;
 		}

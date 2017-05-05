@@ -13,7 +13,6 @@ CPlayerStats::~CPlayerStats() { }
 
 void CPlayerStats::Reset()
 {
-	m_Kills = 0;
 	m_HammerKills = 0;
 	m_GunKills = 0;
 	m_ShotgunKills = 0;
@@ -25,7 +24,7 @@ void CPlayerStats::Reset()
 	m_FlagGrabs = 0;
 	m_FlagCaptures = 0;
 	m_FlagReturns = 0;
-	m_FlaggerKills = 0;
+	m_FlagCarrierKills = 0;
 }
 
 void CPlayerStats::OnDeath()
@@ -35,7 +34,6 @@ void CPlayerStats::OnDeath()
 
 void CPlayerStats::OnKill(int Target, int Weapon)
 {
-	m_Kills++;
 	if (Weapon == WEAPON_HAMMER)
 		m_HammerKills++;
 	else if (Weapon == WEAPON_GUN)
@@ -50,9 +48,9 @@ void CPlayerStats::OnKill(int Target, int Weapon)
 		m_Suicides++;
 }
 
-void CPlayerStats::OnFlaggerKill()
+void CPlayerStats::OnFlagCarrierKill()
 {
-	m_FlaggerKills++;
+	m_FlagCarrierKills++;
 }
 
 void CPlayerStats::OnFlagReturn()

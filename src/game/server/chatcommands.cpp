@@ -36,3 +36,27 @@ void CGameContext::ConTop5(IConsole::IResult *pResult, void *pUserData)
 		return;
 	RequestTop5(ClientID);
 }
+
+void CGameContext::ConCurrentStats(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pSelf->Server()->GetRconCID();
+	if (IsInvalidClientID(ClientID))
+		return;
+	if (!pSelf->m_apPlayers[ClientID])
+		return;
+
+	pSelf->m_pRatedGame->ReportCurrentStats(ClientID);
+}
+
+void CGameContext::ConStats(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pSelf->Server()->GetRconCID();
+	if (IsInvalidClientID(ClientID))
+		return;
+	if (!pSelf->m_apPlayers[ClientID])
+		return;
+
+	pSelf->m_pRatedGame->ReportStats(ClientID);
+}

@@ -91,21 +91,38 @@ void CRatedGame::SendGameinfo()
 	int GameTime = (Server()->Tick() - GameServer()->m_pController->m_RoundStartTick) / Server()->TickSpeed();
 	int WinnerTeam = GameServer()->m_pController->m_aTeamscore[TEAM_RED] > GameServer()->m_pController->m_aTeamscore[TEAM_BLUE] ? TEAM_RED : TEAM_BLUE;
 	str_format(aBuf, sizeof(aBuf), "Gameinfo\nGametype: %s\nMap: %s\nGametime: %d\nResult: %s\nPlayers:\n", GameServer()->m_pController->m_pGameType, g_Config.m_SvMap, GameTime, TeamToString(WinnerTeam));
-	for(int c = 0; c < MAX_CLIENTS; c++)
+	for(int ClientID = 0; ClientID < MAX_CLIENTS; ClientID++)
 	{
-		CPlayer *pPlayer = GameServer()->m_apPlayers[c];
+		CPlayer *pPlayer = GameServer()->m_apPlayers[ClientID];
 		if(!pPlayer)
 			continue;
 
 		char aPlayerBuf[128];
 
-		if(pPlayer->GetTeam() != TEAM_SPECTATORS && IsAuthed(c))
+		if(pPlayer->GetTeam() != TEAM_SPECTATORS && IsAuthed(ClientID))
 		{
 			char aName[MAX_NAME_LENGTH * 2];
-			escape_quotes(aName, m_apAuthedPlayers[c], sizeof(aName));
+			escape_quotes(aName, m_apAuthedPlayers[ClientID], sizeof(aName));
 			char aClan[MAX_CLAN_LENGTH * 2];
 			escape_quotes(aClan, Server()->ClientClan(pPlayer->GetCID()), sizeof(aClan));
-			str_format(aPlayerBuf, sizeof(aPlayerBuf), "\"%s\" \"%s\" %d %s\n", aName, aClan, pPlayer->m_Score, TeamToString(pPlayer->GetTeam()));
+			str_format(aPlayerBuf, sizeof(aPlayerBuf),
+					"\"%s\" \"%s\" %d %s %d %d %d %d %d %d %d %d %d %d %d\n",
+					aName,
+					aClan,
+					pPlayer->m_Score,
+					TeamToString(pPlayer->GetTeam()),
+					m_apPlayerStats[ClientID]->HammerKills(),
+					m_apPlayerStats[ClientID]->GunKills(),
+					m_apPlayerStats[ClientID]->ShotgunKills(),
+					m_apPlayerStats[ClientID]->GrenadeKills(),
+					m_apPlayerStats[ClientID]->RifleKills(),
+					m_apPlayerStats[ClientID]->Deaths(),
+					m_apPlayerStats[ClientID]->Suicides(),
+					m_apPlayerStats[ClientID]->FlagGrabs(),
+					m_apPlayerStats[ClientID]->FlagCaptures(),
+					m_apPlayerStats[ClientID]->FlagReturns(),
+					m_apPlayerStats[ClientID]->FlagCarrierKills()
+			);
 			str_append(aBuf, aPlayerBuf, sizeof(aBuf));
 		}
 	}
@@ -113,6 +130,59 @@ void CRatedGame::SendGameinfo()
 	str_format(aLogBuf, sizeof(aLogBuf), "Reporting gameinfo:\n%s", aBuf);
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aLogBuf);
 	MessageRatingsDb(aBuf);
+}
+
+void CRatedGame::PrintStats(int ClientID, const char* pStatsType, int TotalGames, int HammerKills, int GunKills, int ShotgunKills, int GrenadeKills, int RifleKills, int Deaths, int Suicides, int FlagGrabs, int FlagCaptures, int FlagReturns, int FlagCarrierKills)
+{
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "%s Stats", pStatsType);
+	m_pGameServer->SendChatTarget(ClientID, aBuf);
+
+	m_pGameServer->SendChatTarget(ClientID, "General stats:");
+	int Kills = HammerKills + GunKills + ShotgunKills + GrenadeKills + RifleKills;
+	str_format(aBuf, sizeof(aBuf), "Kills: %d, Deaths: %d, K/D: %d", Kills, Deaths, Kills / ((float) Deaths));
+	m_pGameServer->SendChatTarget(ClientID, aBuf);
+	if (TotalGames > 0)
+	{
+		m_pGameServer->SendChatTarget(ClientID, "Per game:");
+		str_format(aBuf, sizeof(aBuf), "Kills: %d, Deaths: %d, K/D: %d", Kills / TotalGames, Deaths / TotalGames, Kills / ((float) Deaths));
+		m_pGameServer->SendChatTarget(ClientID, aBuf);
+	}
+
+	m_pGameServer->SendChatTarget(ClientID, "Weapon kills:");
+	str_format(aBuf, sizeof(aBuf), "Hammer: %d, Pistol: %d, Shotgun: %d, Grenades: %d, Laser: %d", HammerKills, GunKills, ShotgunKills, GrenadeKills, RifleKills);
+	m_pGameServer->SendChatTarget(ClientID, aBuf);
+
+	if (TotalGames > 0)
+	{
+		m_pGameServer->SendChatTarget(ClientID, "Per game:");
+		str_format(aBuf, sizeof(aBuf), "Hammer: %d, Pistol: %d, Shotgun: %d, Grenades: %d, Laser: %d", HammerKills / TotalGames, GunKills / TotalGames, ShotgunKills / TotalGames, GrenadeKills / TotalGames, RifleKills / TotalGames);
+		m_pGameServer->SendChatTarget(ClientID, aBuf);
+	}
+
+	if(str_comp_nocase(g_Config.m_SvGametype, "rCTF") == 0)
+	{
+		m_pGameServer->SendChatTarget(ClientID, "Flag stats:");
+		str_format(aBuf, sizeof(aBuf), "Grabs: %d, Captures: %d, Returns: %d, Carrier kills: %d", FlagGrabs, FlagCaptures, FlagReturns, FlagCarrierKills);
+		m_pGameServer->SendChatTarget(ClientID, aBuf);
+
+		if (TotalGames > 0)
+		{
+			m_pGameServer->SendChatTarget(ClientID, "Per game:");
+			str_format(aBuf, sizeof(aBuf), "Grabs: %d, Captures: %d, Returns: %d, Carrier kills: %d", FlagGrabs, FlagCaptures, FlagReturns, FlagCarrierKills);
+			m_pGameServer->SendChatTarget(ClientID, aBuf);
+		}
+	}
+}
+
+void CRatedGame::ReportCurrentStats(int ClientID)
+{
+	PrintStats(ClientID, "Current game", 0, m_apPlayerStats[ClientID]->HammerKills(), m_apPlayerStats[ClientID]->GunKills(), m_apPlayerStats[ClientID]->ShotgunKills(), m_apPlayerStats[ClientID]->GrenadeKills(), m_apPlayerStats[ClientID]->RifleKills(), m_apPlayerStats[ClientID]->Deaths(), m_apPlayerStats[ClientID]->Suicides(), m_apPlayerStats[ClientID]->FlagGrabs(), m_apPlayerStats[ClientID]->FlagCaptures(), m_apPlayerStats[ClientID]->FlagReturns(), m_apPlayerStats[ClientID]->FlagCarrierKills());
+}
+
+void CRatedGame::ReportStats(int ClientID)
+{
+
 }
 
 void CRatedGame::OnEndRound()
@@ -204,12 +274,12 @@ void CRatedGame::OnKill(int VictimID, int KillerID, int Weapon)
 	m_apPlayerStats[KillerID]->OnKill(VictimID, Weapon);
 }
 
-void CRatedGame::OnFlaggerKill(int KillerID)
+void CRatedGame::OnFlagCarrierKill(int KillerID)
 {
 	if (!IsRatedGame())
 		return;
 
-	m_apPlayerStats[KillerID]->OnFlaggerKill();
+	m_apPlayerStats[KillerID]->OnFlagCarrierKill();
 }
 
 void CRatedGame::OnFlagCapture(int ClientID)
