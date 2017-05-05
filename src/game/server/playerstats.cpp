@@ -16,6 +16,7 @@ void CPlayerStats::Reset()
 	m_HammerKills = 0;
 	m_GunKills = 0;
 	m_ShotgunKills = 0;
+	m_GrenadeKills = 0;
 	m_RifleKills = 0;
 
 	m_Deaths = 0;
