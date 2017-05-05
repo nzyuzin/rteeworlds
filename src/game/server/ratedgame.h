@@ -40,5 +40,10 @@ public:
 
 	// stats
 	void OnKill(int VictimID, int KillerID, int Weapon);
+	void OnFlaggerKill(int KillerID);
+
+	void OnFlagCapture(int ClientID);
+	void OnFlagReturn(int ClientID);
+	void OnFlagGrab(int ClientID);
 };
 #endif

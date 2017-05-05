@@ -15,7 +15,7 @@ CRatedGame::CRatedGame(class CGameContext *pGameServer)
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
 		m_apAuthedPlayers[i][0] = '\0';
-		m_apPlayerStats[i] = new CPlayerStats(pGameServer);
+		m_apPlayerStats[i] = new CPlayerStats(pGameServer, i);
 	}
 }
 
@@ -202,4 +202,36 @@ void CRatedGame::OnKill(int VictimID, int KillerID, int Weapon)
 
 	m_apPlayerStats[VictimID]->OnDeath();
 	m_apPlayerStats[KillerID]->OnKill(VictimID, Weapon);
+}
+
+void CRatedGame::OnFlaggerKill(int KillerID)
+{
+	if (!IsRatedGame())
+		return;
+
+	m_apPlayerStats[KillerID]->OnFlaggerKill();
+}
+
+void CRatedGame::OnFlagCapture(int ClientID)
+{
+	if (!IsRatedGame())
+		return;
+
+	m_apPlayerStats[ClientID]->OnFlagCapture();
+}
+
+void CRatedGame::OnFlagReturn(int ClientID)
+{
+	if (!IsRatedGame())
+		return;
+
+	m_apPlayerStats[ClientID]->OnFlagReturn();
+}
+
+void CRatedGame::OnFlagGrab(int ClientID)
+{
+	if (!IsRatedGame())
+		return;
+
+	m_apPlayerStats[ClientID]->OnFlagGrab();
 }

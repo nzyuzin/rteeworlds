@@ -59,6 +59,8 @@ int CGameControllerCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 			if(pKiller && pKiller->GetTeam() != pVictim->GetPlayer()->GetTeam())
 				pKiller->m_Score++;
 
+			GameServer()->m_pRatedGame->OnFlaggerKill(pKiller->GetCID());
+
 			HadFlag |= 1;
 		}
 	}
@@ -176,6 +178,7 @@ void CGameControllerCTF::Tick()
 					// CAPTURE! \o/
 					m_aTeamscore[fi^1] += 100;
 					F->m_pCarryingCharacter->GetPlayer()->m_Score += 5;
+					GameServer()->m_pRatedGame->OnFlagCapture(F->m_pCarryingCharacter->GetPlayer()->GetCID());
 
 					char aBuf[512];
 					str_format(aBuf, sizeof(aBuf), "flag_capture player='%d:%s'",
@@ -216,6 +219,7 @@ void CGameControllerCTF::Tick()
 					{
 						CCharacter *pChr = apCloseCCharacters[i];
 						pChr->GetPlayer()->m_Score += 1;
+						GameServer()->m_pRatedGame->OnFlagReturn(pChr->GetPlayer()->GetCID());
 
 						char aBuf[256];
 						str_format(aBuf, sizeof(aBuf), "flag_return player='%d:%s'",
@@ -239,6 +243,8 @@ void CGameControllerCTF::Tick()
 					F->m_AtStand = 0;
 					F->m_pCarryingCharacter = apCloseCCharacters[i];
 					F->m_pCarryingCharacter->GetPlayer()->m_Score += 1;
+
+					GameServer()->m_pRatedGame->OnFlagGrab(F->m_pCarryingCharacter->GetPlayer()->GetCID());
 
 					char aBuf[256];
 					str_format(aBuf, sizeof(aBuf), "flag_grab player='%d:%s'",
