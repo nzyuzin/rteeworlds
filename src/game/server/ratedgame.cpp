@@ -140,12 +140,12 @@ void CRatedGame::PrintStats(int ClientID, const char* pStatsType, int TotalGames
 
 	m_pGameServer->SendChatTarget(ClientID, "General stats:");
 	int Kills = HammerKills + GunKills + ShotgunKills + GrenadeKills + RifleKills;
-	str_format(aBuf, sizeof(aBuf), "Kills: %d, Deaths: %d, K/D: %d", Kills, Deaths, Kills / ((float) Deaths));
+	str_format(aBuf, sizeof(aBuf), "Kills: %d, Deaths: %d, Suicides: %d, K/D: %.3f", Kills, Deaths, Suicides, Deaths > 0 ? ((float) Kills) / ((float) Deaths) : (float) 0);
 	m_pGameServer->SendChatTarget(ClientID, aBuf);
 	if (TotalGames > 0)
 	{
 		m_pGameServer->SendChatTarget(ClientID, "Per game:");
-		str_format(aBuf, sizeof(aBuf), "Kills: %d, Deaths: %d, K/D: %d", Kills / TotalGames, Deaths / TotalGames, Kills / ((float) Deaths));
+		str_format(aBuf, sizeof(aBuf), "Kills: %d, Deaths: %d, Suicides: %d, K/D: %.3f", Kills / TotalGames, Deaths / TotalGames, Suicides / TotalGames, Deaths > 0 ? ((float) Kills) / ((float) Deaths) : (float) 0);
 		m_pGameServer->SendChatTarget(ClientID, aBuf);
 	}
 
