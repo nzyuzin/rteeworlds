@@ -1578,14 +1578,9 @@ void CGameContext::ConCbBadAuth(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConCbError(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	int ClientID = pResult->GetInteger(0);
-	if (ClientID < 0 || ClientID >= MAX_CLIENTS)
-		return;
-	if (!pSelf->m_apPlayers[ClientID])
-		return;
-	const char *pErrorMessage = pResult->GetString(1);
+	const char *pErrorMessage = pResult->GetString(0);
 
-	pSelf->SendChatTarget(ClientID, pErrorMessage);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "teeworlds-ratings", pErrorMessage);
 }
 
 void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
@@ -1636,7 +1631,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("rteeworlds_auth", "s", CFGFLAG_SERVER, ConRteeworldsAuth, this, "Authenticates the player");
 	Console()->Register("_cb_auth_player", "is", CFGFLAG_SERVER, ConCbAuthPlayer, this, "Internal function");
 	Console()->Register("_cb_bad_auth", "i", CFGFLAG_SERVER, ConCbBadAuth, this, "Internal function");
-	Console()->Register("_cb_error", "is", CFGFLAG_SERVER, ConCbError, this, "Internal function");
+	Console()->Register("_cb_error", "s", CFGFLAG_SERVER, ConCbError, this, "Internal function");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
