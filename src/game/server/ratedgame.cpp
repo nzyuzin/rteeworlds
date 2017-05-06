@@ -135,7 +135,7 @@ void CRatedGame::SendGameinfo()
 void CRatedGame::PrintStats(int ClientID, const char* pStatsType, int TotalGames, int HammerKills, int GunKills, int ShotgunKills, int GrenadeKills, int RifleKills, int Deaths, int Suicides, int FlagGrabs, int FlagCaptures, int FlagReturns, int FlagCarrierKills)
 {
 	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "%s Stats", pStatsType);
+	str_format(aBuf, sizeof(aBuf), "%s stats", pStatsType);
 	m_pGameServer->SendChatTarget(ClientID, aBuf);
 
 	m_pGameServer->SendChatTarget(ClientID, "General stats:");
@@ -182,7 +182,7 @@ void CRatedGame::ReportCurrentStats(int ClientID)
 
 void CRatedGame::ReportStats(int ClientID)
 {
-
+	RequestStats(ClientID, Server()->ClientName(ClientID));
 }
 
 void CRatedGame::OnEndRound()

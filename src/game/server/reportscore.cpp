@@ -45,6 +45,15 @@ void Top5RequestMessage(char *pResult, size_t Size, int ClientID)
 	PlayerRequestMessage(pResult, Size, "Top5_players", ClientID, "");
 }
 
+void PlayerStatsRequestMessage(char *pResult, size_t Size, int ClientID, const char* pName)
+{
+	char aEscapedName[MAX_NAME_LENGTH * 2];
+	escape_quotes(aEscapedName, pName, sizeof(aEscapedName));
+	char aNameLine[MAX_NAME_LENGTH * 2 + 2];
+	str_format(aNameLine, sizeof(aNameLine), "\"%s\"", aEscapedName);
+	PlayerRequestMessage(pResult, Size, "Player_stats", ClientID, aNameLine);
+}
+
 void RequestAuthMessage(char *pResult, size_t Size, int ClientID, const char *pName, const char *pSecret)
 {
 	char aEscapedName[MAX_NAME_LENGTH * 2];
@@ -65,6 +74,13 @@ void RequestTop5(int ClientID)
 {
 	char aBuf[512];
 	Top5RequestMessage(aBuf, sizeof(aBuf), ClientID);
+	MessageRatingsDb(aBuf);
+}
+
+void RequestStats(int ClientID, const char *pName)
+{
+	char aBuf[512];
+	PlayerStatsRequestMessage(aBuf, sizeof(aBuf), ClientID, pName);
 	MessageRatingsDb(aBuf);
 }
 
