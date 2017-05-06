@@ -80,7 +80,10 @@ void MessageRatingsDb(const char *pMessage)
 	pid_t pid = fork();
 	if (pid == 0)
 	{
-		execlp("./send_gameinfo", "./send_gameinfo", pMessage, NULL);
+#ifdef CONF_DEBUG
+		dbg_msg("teeworlds-ratings", "Sending message:\n%s\n", pMessage);
+#endif
+		execlp("./teeworlds_ratings", "./teeworlds_ratings", pMessage, NULL);
 		if (errno != 0)
 		{
 			perror("error");
