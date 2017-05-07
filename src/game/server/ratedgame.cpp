@@ -103,12 +103,9 @@ void CRatedGame::SendGameinfo()
 		{
 			char aName[MAX_NAME_LENGTH * 2];
 			escape_quotes(aName, m_apAuthedPlayers[ClientID], sizeof(aName));
-			char aClan[MAX_CLAN_LENGTH * 2];
-			escape_quotes(aClan, Server()->ClientClan(pPlayer->GetCID()), sizeof(aClan));
 			str_format(aPlayerBuf, sizeof(aPlayerBuf),
-					"\"%s\" \"%s\" %d %s %d %d %d %d %d %d %d %d %d %d %d\n",
+					"\"%s\" %d %s %d %d %d %d %d %d %d %d %d %d %d\n",
 					aName,
-					aClan,
 					pPlayer->m_Score,
 					TeamToString(pPlayer->GetTeam()),
 					m_apPlayerStats[ClientID]->HammerKills(),
